@@ -68,29 +68,64 @@ from sklearn.ensemble import (
 from sklearn.cluster import KMeans
 
 from sklearn.metrics import silhouette_score
+import matplotlib.font_manager as fm
 
 RNG = np.random.RandomState(42)
 rng = RNG
 FIG_DIR = Path("figures")
 FIG_DIR.mkdir(exist_ok=True)
 
+
+def _pick_chinese_font():
+    preferred = [
+        "Microsoft YaHei",
+        "PingFang SC",
+        "Heiti SC",
+        "STHeiti",
+        "SimHei",
+        "WenQuanYi Micro Hei",
+        "WenQuanYi Zen Hei",
+        "Noto Sans CJK SC",
+        "Source Han Sans SC",
+        "Source Han Sans CN",
+        "Hiragino Sans GB",
+        "MS Gothic",
+        "Noto Sans CJK JP",
+    ]
+    all_font_names = {f.name.lower() for f in fm.fontManager.ttflist}
+    for name in preferred:
+        if name.lower() in all_font_names:
+            return name
+    return None
+
+_CH_FONT = _pick_chinese_font()
+
 mpl.rcParams.update(
     {
         "font.family": "sans-serif",
-        "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans", "sans-serif"],
+        "font.sans-serif": ([
+            _CH_FONT,
+            "Arial",
+            "Helvetica",
+            "DejaVu Sans",
+            "Liberation Sans",
+            "sans-serif",
+        ]
+        if _CH_FONT
+        else ["Arial", "Helvetica", "DejaVu Sans", "Liberation Sans", "sans-serif"]),
         "font.size": 8,
         "axes.labelsize": 7,
         "axes.titlesize": 8,
         "legend.fontsize": 7,
         "svg.fonttype": "none",
         "pdf.fonttype": 42,
+        "axes.unicode_minus": False,
         "axes.spines.top": False,
         "axes.spines.right": False,
         "axes.linewidth": 0.8,
         "figure.dpi": 120,
     }
 )
-
 
 def save_fig(name, fig=None, w=90, h=60, dpi=600):
     if fig is None:
