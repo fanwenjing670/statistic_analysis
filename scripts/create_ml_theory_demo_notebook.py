@@ -69,6 +69,15 @@ from sklearn.cluster import KMeans
 
 from sklearn.metrics import silhouette_score
 import matplotlib.font_manager as fm
+import time
+import os
+
+try:
+    from IPython.display import display
+    _HAS_IPYTHON = True
+except Exception:
+    display = lambda *args, **kwargs: None
+    _HAS_IPYTHON = False
 
 RNG = np.random.RandomState(42)
 rng = RNG
@@ -133,9 +142,37 @@ def save_fig(name, fig=None, w=90, h=60, dpi=600):
     fig.set_size_inches(w / 25.4, h / 25.4)
     fig.tight_layout()
     out = FIG_DIR / name
-    fig.savefig(f"{out}.svg", bbox_inches="tight")
-    fig.savefig(f"{out}.pdf", bbox_inches="tight")
-    fig.savefig(f"{out}.tiff", dpi=dpi, bbox_inches="tight")
+
+    def _safe_save(filepath, **kwargs):
+        for _ in range(5):
+            try:
+                if os.path.exists(filepath):
+                    try:
+                        os.remove(filepath)
+                    except PermissionError:
+                        time.sleep(0.1)
+                        continue
+                fig.savefig(filepath, **kwargs)
+                return
+            except PermissionError:
+                time.sleep(0.2)
+                continue
+
+    _safe_save(
+        f"{out}.svg",
+        bbox_inches="tight",
+    )
+    _safe_save(
+        f"{out}.pdf",
+        bbox_inches="tight",
+    )
+    _safe_save(
+        f"{out}.tiff",
+        dpi=dpi,
+        bbox_inches="tight",
+    )
+    if _HAS_IPYTHON:
+        display(fig)
     
 
 print("Notebook generation context loaded.")
